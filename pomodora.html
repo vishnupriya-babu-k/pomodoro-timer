@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodora Timer</title>
+    <style>
+        :root {
+            --pink-primary: #FF69B4;
+            --pink-light: #FFAEDC;
+            --pink-dark: #D94A8C;
+            --cream: #FFF5F7;
+            --text-dark: #333;
+            --break-color: #8A2BE2;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--cream);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-dark);
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 800px;
+            width: 100%;
+            padding: 2rem;
+        }
+
+        header {
+            width: 100%;
+            background-color: var(--pink-primary);
+            padding: 1.5rem;
+            border-radius: 0 0 20px 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            color: white;
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: white;
+            font-style: italic;
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            background-color: white;
+            border-radius: 20px;
+            padding: 2rem;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .timer-display {
+            font-size: 5rem;
+            font-weight: bold;
+            color: var(--pink-primary);
+            margin: 1rem 0;
+            transition: color 0.5s ease;
+        }
+
+        .timer-display.break {
+            color: var(--break-color);
+        }
+        
+        .phase-indicator {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: var(--pink-primary);
+            transition: color 0.5s ease;
+        }
+        
+        .phase-indicator.break {
+            color: var(--break-color);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        button {
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 100px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            background-color: var(--pink-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--pink-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: white;
+            color: var(--pink-primary);
+            border: 2px solid var(--pink-primary);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--cream);
+            transform: translateY(-2px);
+        }
+
+        .btn-tertiary {
+            background-color: #f0f0f0;
+            color: var(--text-dark);
+        }
+
+        .btn-tertiary:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        .option-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .music-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stats-section {
+            background-color: white;
+            border-radius: 20px;
+            padding: 2rem;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-top: 1rem;
+        }
+
+        .stats-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        h2 {
+            color: var(--pink-primary);
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .month-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .month-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--pink-primary);
+            cursor: pointer;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-card {
+            background-color: var(--cream);
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .stat-title {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--pink-primary);
+        }
+
+        .stat-subtext {
+            font-size: 0.9rem;
+            color: #777;
+            margin-top: 0.2rem;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--pink-primary);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .ribbon {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 40px;
+            height: 40px;
+            background-color: var(--pink-primary);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .ribbon:before, .ribbon:after {
+            content: '';
+            position: absolute;
+            background-color: var(--pink-primary);
+            width: 15px;
+            height: 30px;
+            border-radius: 8px;
+        }
+
+        .ribbon:before {
+            transform: rotate(-45deg) translate(15px, 0px);
+        }
+
+        .ribbon:after {
+            transform: rotate(-135deg) translate(15px, 0px);
+        }
+
+        /* Alert Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            animation: popIn 0.3s forwards;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .modal h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: var(--pink-primary);
+        }
+
+        .modal.break h3 {
+            color: var(--break-color);
+        }
+
+        .modal p {
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: var(--pink-light);
+            opacity: 0;
+        }
+
+        @media (max-width: 600px) {
+            .timer-display {
+                font-size: 4rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 0.8rem;
+            }
+            
+            button {
+                width: 100%;
+            }
+            
+            .option-row {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--pink-primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+
+        .calendar-heatmap {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-top: 1rem;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+        }
+
+        .level-0 { background-color: #f0f0f0; }
+        .level-1 { background-color: #FFDBEC; }
+        .level-2 { background-color: #FFBEDE; }
+        .level-3 { background-color: #FF9ED0; }
+        .level-4 { background-color: #FF69B4; }
+
+        .day-label {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #777;
+            margin-bottom: 4px;
+        }
+
+        .day-row {
+            display: flex;
+            gap: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Pomodora Timer</h1>
+        <p class="subtitle">What, like it's hard to focus?</p>
+    </header>
+
+    <div class="container">
+        <div class="main-content">
+            <div class="ribbon"></div>
+            <div class="phase-indicator">Study Time</div>
+            <div class="timer-display">50:00</div>
+            <div class="progress-bar-container">
+                <div class="progress-bar"></div>
+            </div>
+            <div class="controls">
+                <button class="btn-primary" id="startBtn">Start</button>
+                <button class="btn-secondary" id="pauseBtn" disabled>Pause</button>
+                <button class="btn-tertiary" id="resetBtn">Reset</button>
+            </div>
+            <div class="option-row">
+                <div class="music-control">
+                    <span>Music</span>
+                    <label class="switch">
+                        <input type="checkbox" id="musicToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="music-control">
+                    <span>Sound Alerts</span>
+                    <label class="switch">
+                        <input type="checkbox" id="alertToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-section">
+            <div class="stats-header">
+                <h2>Monthly Summary</h2>
+                <div class="month-selector">
+                    <button class="month-btn" id="prevMonth">◀</button>
+                    <span id="currentMonth">May 2025</span>
+                    <button class="month-btn" id="nextMonth">▶</button>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-title">Total Study Time</div>
+                    <div class="stat-value" id="totalStudyTime">0h 0m</div>
+                    <div class="stat-subtext">This month</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Most Productive Day</div>
+                    <div class="stat-value" id="productiveDay">-</div>
+                    <div class="stat-subtext" id="productiveDayTime">0h 0m</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Most Productive Time</div>
+                    <div class="stat-value" id="productiveTime">-</div>
+                    <div class="stat-subtext">Average per week</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Focus Sessions</div>
+                    <div class="stat-value" id="focusSessions">0</div>
+                    <div class="stat-subtext">Completed this month</div>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 2rem; margin-bottom: 0.5rem; color: var(--text-dark);">Study Activity</h3>
+            <div class="day-label" style="display: flex; justify-content: space-around; width: 100%;">
+                <span>Sun</span>
+                <span>Mon</span>
+                <span>Tue</span>
+                <span>Wed</span>
+                <span>Thu</span>
+                <span>Fri</span>
+                <span>Sat</span>
+            </div>
+            <div class="calendar-heatmap" id="activityHeatmap">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Modal -->
+    <div class="modal" id="alertModal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Time's Up!</h3>
+            <p id="modalMessage">Your study session is complete.</p>
+            <button class="btn-primary" id="modalButton">Start Break</button>
+        </div>
+    </div>
+
+    <script>
+        // Timer variables
+        const WORK_TIME = 50 * 60; // 50 minutes in seconds
+        const BREAK_TIME = 5 * 60; // 5 minutes in seconds
+        let timeLeft = WORK_TIME;
+        let isWorkMode = true;
+        let isRunning = false;
+        let timerInterval;
+        let currentAudio = null;
+        let workMusic = null;
+        let breakMusic = null;
+        let alertSound = null;
+        
+        // Session tracking
+        let currentSession = {
+            startTime: null,
+            totalWorkTime: 0,
+            totalBreakTime: 0,
+            isActive: false
+        };
+        
+        // DOM Elements
+        const timerDisplay = document.querySelector('.timer-display');
+        const phaseIndicator = document.querySelector('.phase-indicator');
+        const progressBar = document.querySelector('.progress-bar');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const musicToggle = document.getElementById('musicToggle');
+        const alertToggle = document.getElementById('alertToggle');
+        const modal = document.getElementById('alertModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalButton = document.getElementById('modalButton');
+        
+        // Stats elements
+        const totalStudyTimeEl = document.getElementById('totalStudyTime');
+        const productiveDayEl = document.getElementById('productiveDay');
+        const productiveDayTimeEl = document.getElementById('productiveDayTime');
+        const productiveTimeEl = document.getElementById('productiveTime');
+        const focusSessionsEl = document.getElementById('focusSessions');
+        const activityHeatmap = document.getElementById('activityHeatmap');
+        const currentMonthEl = document.getElementById('currentMonth');
+        const prevMonthBtn = document.getElementById('prevMonth');
+        const nextMonthBtn = document.getElementById('nextMonth');
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateTimerDisplay();
+            setupAudio();
+            loadStatsForCurrentMonth();
+            renderCalendarHeatmap();
+            
+            // Set up event listeners
+            startBtn.addEventListener('click', startTimer);
+            pauseBtn.addEventListener('click', pauseTimer);
+            resetBtn.addEventListener('click', resetTimer);
+            modalButton.addEventListener('click', handleModalAction);
+            musicToggle.addEventListener('change', toggleMusic);
+            alertToggle.addEventListener('change', toggleAlerts);
+            prevMonthBtn.addEventListener('click', () => changeMonth(-1));
+            nextMonthBtn.addEventListener('click', () => changeMonth(1));
+        });
+        
+        // Timer Functions
+        function startTimer() {
+            if (!isRunning) {
+                isRunning = true;
+                
+                // Record session start time if not already active
+                if (!currentSession.isActive) {
+                    currentSession.startTime = new Date();
+                    currentSession.isActive = true;
+                }
+                
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    
+                    // Update progress bar
+                    const maxTime = isWorkMode ? WORK_TIME : BREAK_TIME;
+                    const progress = 100 - ((timeLeft / maxTime) * 100);
+                    progressBar.style.width = `${progress}%`;
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        isRunning = false;
+                        
+                        // Play alert sound if enabled
+                        if (alertToggle.checked) {
+                            playAlertSound();
+                        }
+                        
+                        // Show appropriate modal
+                        showAlert();
+                        
+                        // Save session data
+                        if (isWorkMode) {
+                            saveWorkSession(WORK_TIME);
+                        }
+                        
+                        // Don't auto-switch - wait for user to confirm
+                    }
+                    
+                    updateTimerDisplay();
+                }, 1000);
+                
+                startBtn.disabled = true;
+                pauseBtn.disabled = false;
+                
+                // Play appropriate music if enabled
+                if (musicToggle.checked) {
+                    playBackgroundMusic();
+                }
+            }
+        }
+        
+        function pauseTimer() {
+            if (isRunning) {
+                clearInterval(timerInterval);
+                isRunning = false;
+                startBtn.disabled = false;
+                pauseBtn.disabled = true;
+                
+                // Pause music if playing
+                if (currentAudio && !currentAudio.paused) {
+                    currentAudio.pause();
+                }
+            }
+        }
+        
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            timeLeft = isWorkMode ? WORK_TIME : BREAK_TIME;
+            progressBar.style.width = '0%';
+            updateTimerDisplay();
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            
+            // Stop music if playing
+            if (currentAudio && !currentAudio.paused) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+            
+            // Reset current session if active
+            if (currentSession.isActive) {
+                currentSession.isActive = false;
+                currentSession.totalWorkTime = 0;
+                currentSession.totalBreakTime = 0;
+            }
+        }
+        
+        function switchMode() {
+            isWorkMode = !isWorkMode;
+            timeLeft = isWorkMode ? WORK_TIME : BREAK_TIME;
+            progressBar.style.width = '0%';
+            
+            // Update UI
+            if (isWorkMode) {
+                phaseIndicator.textContent = 'Study Time';
+                phaseIndicator.classList.remove('break');
+                timerDisplay.classList.remove('break');
+            } else {
+                phaseIndicator.textContent = 'Break Time';
+                phaseIndicator.classList.add('break');
+                timerDisplay.classList.add('break');
+            }
+            
+            updateTimerDisplay();
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            
+            // Switch music if it's enabled
+            if (musicToggle.checked && isRunning) {
+                playBackgroundMusic();
+            }
+        }
+        
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        // Audio Functions
+        function setupAudio() {
+            // Create audio elements
+            workMusic = new Audio('D:/vishnucodes/4K Cozy Coffee Shop with Smooth Piano Jazz Music for Relaxing, Studying and Working.mp3'); 
+            breakMusic = new Audio('D:/vishnucodes/˗ˏˋ ☆ “nobody can stop me” academic overachiever subliminal w_sped up marina 2 help u study ♡.mp3'); 
+            alertSound = new Audio('D:/vishnucodes/beep-beep-beep-beep-80262.mp3'); 
+            
+            // Set to loop
+            workMusic.loop = true;
+            breakMusic.loop = true;
+            
+            // Set volumes
+            workMusic.volume = 0.3;
+            breakMusic.volume = 0.4;
+            alertSound.volume = 0.8;
+        }
+        
+        function playBackgroundMusic() {
+            // Stop current audio if playing
+            if (currentAudio && !currentAudio.paused) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+            
+            // Play appropriate track based on mode
+            currentAudio = isWorkMode ? workMusic : breakMusic;
+            
+            // Only play if music is enabled
+            if (musicToggle.checked) {
+                currentAudio.play().catch(e => {
+                    console.log('Audio play failed:', e);
+                    // Most browsers require user interaction before audio can play
+                    musicToggle.checked = false;
+                });
+            }
+        }
+        
+        function playAlertSound() {
+            if (alertToggle.checked) {
+                // Pause background music temporarily
+                if (currentAudio && !currentAudio.paused) {
+                    currentAudio.pause();
+                }
+                
+                // Play alert sound
+                alertSound.currentTime = 0;
+                alertSound.play().catch(e => {
+                    console.log('Alert sound play failed:', e);
+                });
+            }
+        }
+        
+        function toggleMusic() {
+            if (musicToggle.checked && isRunning) {
+                playBackgroundMusic();
+            } else if (!musicToggle.checked && currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+        }
+        
+        function toggleAlerts() {
+            // Just updates the setting, no immediate action needed
+        }
+        
+        // Modal Functions
+        function showAlert() {
+            if (isWorkMode) {
+                modalTitle.textContent = "Study Time Complete!";
+                modalMessage.textContent = "Great job! Take a well-deserved break.";
+                modalButton.textContent = "Start Break";
+                modal.classList.remove('break');
+            } else {
+                modalTitle.textContent = "Break Time Over!";
+                modalMessage.textContent = "Ready to get back to work?";
+                modalButton.textContent = "Start Studying";
+                modal.classList.add('break');
+            }
+            
+            modal.style.display = 'flex';
+            createConfetti();
+        }
+        
+        function handleModalAction() {
+            modal.style.display = 'none';
+            
+            // Stop alert sound if it's still playing
+            if (alertSound && !alertSound.paused) {
+                alertSound.pause();
+                alertSound.currentTime = 0;
+            }
+            
+            // Switch modes and start the next timer
+            switchMode();
+            startTimer();
+        }
+        
+        // Stats and Data Functions
+        function saveWorkSession(duration) {
+            // Get existing data from localStorage
+            let studyData = JSON.parse(localStorage.getItem('studyData')) || {};
+            
+            // Get today's date string (YYYY-MM-DD)
+            const today = new Date();
+            const dateString = today.toISOString().split('T')[0];
+            const timeHour = today.getHours();
+            
+            // Create year and month keys if they don't exist
+            const year = today.getFullYear();
+            const month = today.getMonth();
+            if (!studyData[year]) {
+                studyData[year] = {};
+            }
+            if (!studyData[year][month]) {
+                studyData[year][month] = {
+                    days: {},
+                    hours: Array(24).fill(0),
+                    totalSessions: 0,
+                    totalTime: 0
+                };
+            }
+            
+            // Create or update today's data
+            if (!studyData[year][month].days[dateString]) {
+                studyData[year][month].days[dateString] = {
+                    sessions: 0,
+                    time: 0
+                };
+            }
+            
+            // Update stats
+            studyData[year][month].days[dateString].sessions += 1;
+            studyData[year][month].days[dateString].time += duration;
+            studyData[year][month].hours[timeHour] += duration;
+            studyData[year][month].totalSessions += 1;
+            studyData[year][month].totalTime += duration;
+            
+            // Save updated data
+            localStorage.setItem('studyData', JSON.stringify(studyData));
+            
+            // Refresh stats display
+            loadStatsForCurrentMonth();
+        }
+        
+        function loadStatsForCurrentMonth() {
+            // Default to current month if not specified
+            const now = new Date();
+            let currentViewYear = parseInt(localStorage.getItem('viewYear')) || now.getFullYear();
+            let currentViewMonth = parseInt(localStorage.getItem('viewMonth')) || now.getMonth();
+            
+            // Update month display
+            const monthNames = ["January", "February", "March", "April", "May", "June", 
+                               "July", "August", "September", "October", "November", "December"];
+            currentMonthEl.textContent = `${monthNames[currentViewMonth]} ${currentViewYear}`;
+            
+            // Get data for the specified month
+            const studyData = JSON.parse(localStorage.getItem('studyData')) || {};
+            const monthData = studyData[currentViewYear]?.[currentViewMonth] || {
+                days: {},
+                hours: Array(24).fill(0),
+                totalSessions: 0,
+                totalTime: 0
+            };
+            
+            // Update total study time
+            const totalHours = Math.floor(monthData.totalTime / 3600);
+            const totalMinutes = Math.floor((monthData.totalTime % 3600) / 60);
+            totalStudyTimeEl.textContent = `${totalHours}h ${totalMinutes}m`;
+            
+            // Find most productive day
+            let maxTime = 0;
+            let productiveDate = '-';
+            
+            Object.entries(monthData.days).forEach(([date, data]) => {
+                if (data.time > maxTime) {
+                    maxTime = data.time;
+                    productiveDate = date;
+                }
+            });
+            
+            if (productiveDate !== '-') {
+                const dateParts = productiveDate.split('-');
+                const dateObj = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+                const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                productiveDayEl.textContent = `${dayNames[dateObj.getDay()]} ${dateObj.getDate()}`;
+                
+                const pHours = Math.floor(maxTime / 3600);
+                const pMinutes = Math.floor((maxTime % 3600) / 60);
+                productiveDayTimeEl.textContent = `${pHours}h ${pMinutes}m`;
+            } else {
+                productiveDayEl.textContent = '-';
+                productiveDayTimeEl.textContent = '0h 0m';
+            }
+            
+            // Find most productive time
+            let maxHourTime = 0;
+            let productiveHour = 0;
+            
+            monthData.hours.forEach((time, hour) => {
+                if (time > maxHourTime) {
+                    maxHourTime = time;
+                    productiveHour = hour;
+                }
+            });
+            
+            if (maxHourTime > 0) {
+                // Format hour in 12-hour format with AM/PM
+                const hour12 = productiveHour % 12 || 12;
+                const ampm = productiveHour < 12 ? 'AM' : 'PM';
+                productiveTimeEl.textContent = `${hour12} ${ampm}`;
+            } else {
+                productiveTimeEl.textContent = '-';
+            }
+            
+            // Update focus sessions
+            focusSessionsEl.textContent = monthData.totalSessions.toString();
+            
+            // Update calendar heatmap
+            renderCalendarHeatmap(currentViewYear, currentViewMonth);
+        }
+        
+        function changeMonth(delta) {
+            // Get current view month/year
+            let viewYear = parseInt(localStorage.getItem('viewYear')) || new Date().getFullYear();
+            let viewMonth = parseInt(localStorage.getItem('viewMonth')) || new Date().getMonth();
+            
+            // Calculate new month/year
+            viewMonth += delta;
+            if (viewMonth > 11) {
+                viewMonth = 0;
+                viewYear++;
+            } else if (viewMonth < 0) {
+                viewMonth = 11;
+                viewYear--;
+            }
+            
+            // Save new view date
+            localStorage.setItem('viewYear', viewYear);
+            localStorage.setItem('viewMonth', viewMonth);
+            
+            // Update display
+            loadStatsForCurrentMonth();
+        }
+        
+        function renderCalendarHeatmap(year, month) {
+            // Clear existing calendar
+            activityHeatmap.innerHTML = '';
+            
+            if (!year || !month) {
+                year = new Date().getFullYear();
+                month = new Date().getMonth();
+            }
+            
+            // Get first day of month and total days
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            // Get study data for this month
+            const studyData = JSON.parse(localStorage.getItem('studyData')) || {};
+            const monthData = studyData[year]?.[month]?.days || {};
+            
+            // Find max study time for scaling
+            let maxDayTime = 0;
+            Object.values(monthData).forEach(day => {
+                if (day.time > maxDayTime) maxDayTime = day.time;
+            });
+            
+            // Add empty cells for days before the 1st
+            for (let i = 0; i < firstDay; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day';
+                activityHeatmap.appendChild(emptyDay);
+            }
+            
+            // Add cells for each day of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayTime = monthData[dateStr]?.time || 0;
+                
+                // Calculate intensity level (0-4)
+                let level = 0;
+                if (maxDayTime > 0) {
+                    level = Math.ceil((dayTime / maxDayTime) * 4);
+                }
+                
+                const dayCell = document.createElement('div');
+                dayCell.className = `calendar-day level-${level}`;
+                dayCell.title = dayTime > 0 ? 
+                    `${Math.floor(dayTime / 3600)}h ${Math.floor((dayTime % 3600) / 60)}m on ${dateStr}` : 
+                    `No study time on ${dateStr}`;
+                
+                // Add day number
+                const dayNum = document.createElement('div');
+                dayNum.style.fontSize = '0.6rem';
+                dayNum.style.color = level > 2 ? '#fff' : '#777';
+                dayNum.style.textAlign = 'center';
+                dayNum.style.marginTop = '3px';
+                dayNum.textContent = day;
+                dayCell.appendChild(dayNum);
+                
+                activityHeatmap.appendChild(dayCell);
+            }
+        }
+        
+        // Visual Effects
+        function createConfetti() {
+            const confettiCount = 50;
+            const colors = ['#FFAEDC', '#FF69B4', '#FFD1DC', '#FFC0CB'];
+            
+            for (let i = 0; i < confettiCount; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = `${Math.random() * 100}%`;
+                confetti.style.top = `-10px`;
+                confetti.style.opacity = '1';
+                confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                
+                // Random shapes
+                if (Math.random() > 0.5) {
+                    confetti.style.borderRadius = '50%';
+                } else {
+                    confetti.style.width = '6px';  
+                    confetti.style.height = '12px';
+                }
+                
+                document.body.appendChild(confetti);
+                
+                // Animate confetti
+                const speed = 3 + Math.random() * 5;
+                const destinationY = window.innerHeight;
+                
+                let position = -10;
+                let opacity = 1;
+                let rotation = Math.random() * 360;
+                
+                const animate = () => {
+                    position += speed;
+                    opacity -= 0.01;
+                    rotation += 5;
+                    
+                    confetti.style.top = `${position}px`;
+                    confetti.style.opacity = opacity.toString();
+                    confetti.style.transform = `rotate(${rotation}deg)`;
+                    
+                    if (position < destinationY && opacity > 0) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        confetti.remove();
+                    }
+                };
+                
+                requestAnimationFrame(animate);
+            }
+        }
+    </script>
+</body>
+</html>
